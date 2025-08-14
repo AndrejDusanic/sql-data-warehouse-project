@@ -1,0 +1,25 @@
+CREATE OR REPLACE FUNCTION bronze._do_copy(tbl regclass, full_path text)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    t0 timestamp;
+    t1 timestamp;
+BEGIN
+    t0 := clock_timestamp();
+
+    -- TRUNCATE
+    EXECUTE format('TRUNCATE TABLE %s', tbl);
+
+    -- COPY (server-side)
+    EXECUTE format(
+        'COPY %s FROM %L WITH (FORMAT csv, HEADER true)',
+        tbl, full_path
+    );
+
+    t1 := clock_timestamp();
+    RAISE NOTICE '>> % copied in % seconds',
+        tbl::text, (EXTRACT(EPOCH FROM (t1 - t0))::int);
+    RAISE NOTICE '>> -------------';
+END;
+$$;
