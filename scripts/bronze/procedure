@@ -1,1 +1,38 @@
 
+CREATE OR REPLACE PROCEDURE bronze.load_bronze(p_root text DEFAULT 'C:\\sql\\dwh_project\\datasets')
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RAISE NOTICE '================================================';
+    RAISE NOTICE 'Loading Bronze Layer';
+    RAISE NOTICE 'Root folder: %', p_root;
+    RAISE NOTICE '================================================';
+
+    RAISE NOTICE '------------------------------------------------';
+    RAISE NOTICE 'Loading CRM Tables';
+    RAISE NOTICE '------------------------------------------------';
+
+    PERFORM bronze._do_copy('bronze.crm_cust_info',      p_root || '\source_crm\cust_info.csv');
+    PERFORM bronze._do_copy('bronze.crm_prd_info',       p_root || '\source_crm\prd_info.csv');
+    PERFORM bronze._do_copy('bronze.crm_sales_details',  p_root || '\source_crm\sales_details.csv');
+
+    RAISE NOTICE '------------------------------------------------';
+    RAISE NOTICE 'Loading ERP Tables';
+    RAISE NOTICE '------------------------------------------------';
+
+    PERFORM bronze._do_copy('bronze.erp_loc_a101',       p_root || '\source_erp\loc_a101.csv');
+    PERFORM bronze._do_copy('bronze.erp_cust_az12',      p_root || '\source_erp\cust_az12.csv');
+    PERFORM bronze._do_copy('bronze.erp_px_cat_g1v2',    p_root || '\source_erp\px_cat_g1v2.csv');
+
+    RAISE NOTICE '==========================================';
+    RAISE NOTICE 'Loading Bronze Layer is Completed';
+    RAISE NOTICE '==========================================';
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE NOTICE '==========================================';
+        RAISE NOTICE 'ERROR OCCURRED DURING LOADING BRONZE LAYER';
+        RAISE NOTICE 'Message: %', SQLERRM;
+        RAISE NOTICE '==========================================';
+        RAISE;
+END;
+$$;
